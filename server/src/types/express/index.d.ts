@@ -1,7 +1,15 @@
-declare namespace Express {
+declare global {
+  namespace Express {
     interface Request {
-      user?: {
-        username: string;
-      };
+      user?: JwtPayload;
     }
   }
+}
+
+declare namespace Express {
+  interface Request {
+    user?: {
+      username: string;
+    };
+  }
+}

@@ -16,19 +16,14 @@ export const authenticateToken = (
     return res.sendStatus(401); // Unauthorized
   }
   jwt.verify(token, process.env.JWT_SECRET as string, (err, decoded) => {
-    const user =
-      typeof decoded === "object" && decoded !== null
-        ? (decoded as JwtPayload)
-        : undefined;
     if (err) {
       return res.sendStatus(403); // Forbidden
     }
-    if (user) {
-      req.user = user; // Add user data to request object
-      return next();
-    } else {
-      return res.sendStatus(403); // Forbidden
-    }
+    const user = decoded as JwtPayload;
+    req.user = user;
+    next();
+    return; // Ensure this path explicitly returns
   });
-  return; // Ensure all code paths return a value
+  return; // Add this return to cover all code paths
+  // The user is already added to the request object in the callback above.
 };
