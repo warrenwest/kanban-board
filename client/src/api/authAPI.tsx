@@ -1,8 +1,7 @@
 import { UserLogin } from "../interfaces/UserLogin";
+import AuthService from "../utils/auth"; // If you're using AuthService
 
 const login = async (userInfo: UserLogin) => {
-  // This function will handle the login logic
-  // You will need to make a POST request to the server's login endpoint
   const response = await fetch("/api/login", {
     method: "POST",
     headers: {
@@ -10,18 +9,20 @@ const login = async (userInfo: UserLogin) => {
     },
     body: JSON.stringify(userInfo),
   });
+
+  const data = await response.json().catch(() => ({}));
+
   if (!response.ok) {
-    throw new Error("Login failed");
+    throw new Error(data.error || "Login failed");
   }
-  const data = await response.json();
-  // Assuming the server returns a token on successful login
-  if (data.token) {
-    // Store the token in localStorage or sessionStorage
-    localStorage.setItem("token", data.token);
-  } else {
-    throw new Error("No token received");
+
+  if (!data.token) {
+    throw new Error("No token received from server");
   }
-  return data; // Return the data received from the server
+
+  AuthService.login(data.token); // Or localStorage.setItem("token", data.token)
+
+  return data;
 };
 
 export { login };

@@ -3,17 +3,20 @@ export const authenticateToken = (req, res, next) => {
     const authHeader = req.headers["authorization"];
     const token = authHeader && authHeader.split(" ")[1];
     if (!token) {
-        return res.sendStatus(401); // Unauthorized
+        return res.status(401).json({ error: "No token provided" });
     }
-    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+    const secret = process.env.JWT_SECRET;
+    if (!secret) {
+        return res.status(500).json({ error: "JWT_SECRET is not defined" });
+    }
+    jwt.verify(token, secret, (err, decoded) => {
         if (err) {
-            return res.sendStatus(403); // Forbidden
+            res.status(403).json({ error: "Invalid or expired token" });
+            return;
         }
-        const user = decoded;
-        req.user = user;
+        req.user = decoded;
         next();
-        return; // Ensure this path explicitly returns
+        return;
     });
-    return; // Add this return to cover all code paths
-    // The user is already added to the request object in the callback above.
+    return;
 };

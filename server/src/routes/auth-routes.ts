@@ -10,23 +10,31 @@ export const login = async (req: Request, res: Response) => {
       .status(400)
       .json({ error: "Username and password are required" });
   }
+
   try {
-    const user = await User.findOne({ where: { username } });
+    const user = await User.findOne({
+      where: { username },
+      attributes: ["username", "password"] // Ensure password is fetched
+    });
+
     if (!user) {
       return res.status(401).json({ error: "Invalid username or password" });
     }
+
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       return res.status(401).json({ error: "Invalid username or password" });
     }
-    // Generate JWT token
-    const token = jwt.sign(
-      { username: user.username },
-      process.env.JWT_SECRET as string,
-      {
-        expiresIn: "1h", // Token expiration time
-      }
-    );
+
+    const secret = process.env.JWT_SECRET;
+    if (!secret) {
+      throw new Error("JWT_SECRET is not defined");
+    }
+
+    const token = jwt.sign({ username: user.username }, secret, {
+      expiresIn: "1h"
+    });
+
     return res.status(200).json({ token });
   } catch (error) {
     console.error("Login error:", error);
@@ -35,8 +43,5 @@ export const login = async (req: Request, res: Response) => {
 };
 
 const router = Router();
-
-// POST /login - Login a user
 router.post("/login", login);
-
 export default router;
