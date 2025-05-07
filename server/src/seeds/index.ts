@@ -1,6 +1,8 @@
 import { seedUsers } from './user-seeds.js';
 import { seedTickets } from './ticket-seeds.js';
-import { sequelize } from '../models/index.js';
+import { sequelize } from '../models/index.js'; // Ensure sequelize is typed in the models file
+
+// Explicitly type sequelize (already imported from models)
 
 const seedAll = async (): Promise<void> => {
   try {
